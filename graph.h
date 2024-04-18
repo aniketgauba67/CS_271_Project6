@@ -2,6 +2,7 @@
 #define GRAPH_H
 
 #include <vector>
+#include <map>
 #include <string>
 #include <unordered_map>
 
@@ -17,6 +18,7 @@ public:
     void print_path(const K& u, const K& v);
     string edge_class(const K& u, const K& v);
     void bfs_tree(const K& s);
+    bool edge_exists(const K& u, const K& v);
 
 private:
     struct Vertex {
