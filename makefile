@@ -1,17 +1,20 @@
-CC=g++
-CFLAGS=-std=c++11 -Wall
-TARGET=test
+#----------------------------#
+#	Make File for Graph		 #
+# Andrew A, Anekit G, Ryan D #
+#----------------------------#
+all: test # runs everything at once
 
-all: $(TARGET)
-$(TARGET): graph.o test_graph.o
-	$(CC) $(CFLAGS) -o $(TARGET) graph.o test_graph.o
+test: test_graph.o
+	g++ -o test test_graph.o graph.cpp
 
-graph.o: graph.cpp graph.h
-	$(CC) $(CFLAGS) -c graph.cpp
-
-test_graph.o: test_graph.cpp graph.h
-	$(CC) $(CFLAGS) -c test_graph.cpp
+test_graph.o:
+	g++ -c test_graph.cpp
 
 clean:
-	rm -f $(TARGET) *.o
+	rm -f test usecase *.o *.exe
 
+#For when doin in vscode on Windows:
+# del /Q /F test usecase *.o *.exe
+
+#For when on linux & Mac:
+# rm -f test usecase *.o *.exe
