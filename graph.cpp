@@ -1,6 +1,7 @@
 #include "graph.h"
 #include <iostream>
 #include <vector>
+#include <map>
 
 
 using namespace std;
@@ -26,10 +27,25 @@ Graph<D, K>::Graph(const vector<K>& keys, const vector<D>& data, const vector<ve
 
 // Get Function
 template<typename D, typename K>
-Vertex* Graph<D, K>::get(const K& key) {
-
+Vertex<D, K>* get(const K& key) {
+    return &vertices[key];
 }
 
+
+// edge exists functions
+template<typename D, typename K>
+bool Graph<D, K>::edge_exists(const K& u, const K& v) {
+    Vertex* u_vertex = get(u);
+    if (u_vertex == nullptr) {
+        return false;
+    }
+    for (Vertex* adj_vertex : u_vertex->adj) {
+        if (adj_vertex->key == v) {
+            return true;
+        }
+    }
+    return false;
+}
 
 
 
