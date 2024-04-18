@@ -12,7 +12,7 @@ template<typename D, typename K>
 class Graph {
 public:
     Graph(const vector<K>& keys, const vector<D>& data, const vector<vector<K>>& edges);
-    Vertex* get(const K& key);
+    Vertex* get(K key) const;
     bool reachable(const K& u, const K& v);
     void bfs(const K& s);
     void print_path(const K& u, const K& v);
