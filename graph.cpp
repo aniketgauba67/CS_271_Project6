@@ -27,8 +27,15 @@ Graph<D, K>::Graph(const vector<K>& keys, const vector<D>& data, const vector<ve
 
 // Get Function
 template<typename D, typename K>
-Vertex<D, K>* get(const K& key) {
-    return &vertices[key];
+Vertex<D, K>* Graph<D, K>::get(K key) const{
+    int length = vetices.size();
+
+    for(int i = 0; i<len; i++){
+        if(vertices[i]->key == key){
+            return vertices[i];
+        }
+    }
+    return nullptr;
 }
 
 
