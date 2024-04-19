@@ -108,7 +108,7 @@ template <typename D, typename K>
 void print_path(K u, K v, std::unordered_map<K, std::list<K>> &graph)
 {
     // Check if the start and end vertices are in the graph
-    if (graph.find(u) == graph.end() || graph.find(v) == graph.end())
+    if (graph.find(u) == graph.end() || graph.find(v) == graph.end()) // If either 'u' or 'v' is not in the graph
     {
         std::cout << "Invalid vertex key" << std::endl;
         return;
@@ -116,7 +116,7 @@ void print_path(K u, K v, std::unordered_map<K, std::list<K>> &graph)
     std::queue<K> q;                      // Queue for BFS
     std::unordered_map<K, K> predecessor; // Map to store the predecessor of each vertex
     std::unordered_set<K> visited;        // Set to store visited vertices
-    std::list<K> path;
+    std::list<K> path;                    // List to store the path from 'u' to 'v'
 
     // Start BFS from the vertex 'u'
     q.push(u);
@@ -137,9 +137,9 @@ void print_path(K u, K v, std::unordered_map<K, std::list<K>> &graph)
         {
             if (visited.find(adj) == visited.end())
             {
-                visited.insert(adj);
-                q.push(adj);
-                predecessor[adj] = current;
+                visited.insert(adj);        // Mark the vertex as visited
+                q.push(adj);                // Add the vertex to the queue
+                predecessor[adj] = current; // Store the predecessor of the adjacent vertex
             }
         }
     }
@@ -159,7 +159,7 @@ void print_path(K u, K v, std::unordered_map<K, std::list<K>> &graph)
 
     // Print the path
     auto it = path.begin();
-    std::cout << *it;
+    std::cout << *it; //
     ++it;
     while (it != path.end())
     {
