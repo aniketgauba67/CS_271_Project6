@@ -121,20 +121,17 @@ void print_path(K u, K v, std::unordered_map<K, std::list<K>> &graph)
     // Start BFS from the vertex 'u'
     q.push(u);
     visited.insert(u);
-
     bool found = false;
     while (!q.empty() && !found)
     {
         K current = q.front();
         q.pop();
-
         // Check if we have reached the destination vertex
         if (current == v)
         {
             found = true;
             break;
         }
-
         // Explore each adjacent vertex
         for (const K &adj : graph[current])
         {
@@ -146,7 +143,6 @@ void print_path(K u, K v, std::unordered_map<K, std::list<K>> &graph)
             }
         }
     }
-
     // If 'v' was not reached from 'u'
     if (!found)
     {
