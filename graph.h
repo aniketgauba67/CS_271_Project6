@@ -16,22 +16,22 @@ public:
         K key;
         vector<Vertex*> adj;
         int distance;
+        bool color; 
+        K pi; 
+        int f; 
     };
 
     Graph(const vector<K>& keys, const vector<D>& data, const vector<vector<K>>& edges);
-    const Vertex* get(K key) const;
+    Vertex* get(K key);
     bool reachable(const K& u, const K& v);
     void bfs(const K& s);
     void print_path(const K& u, const K& v);
     string edge_class(const K u, const K v);
-    void bfs_tree(const K& s);
     bool edge_exists(const K& u, const K& v);
-    void add(V key, E data) {
-    Vertex newVertex;
-    newVertex.key = key;
-    newVertex.data = data;
-    vertices[key] = newVertex;
-    }
+    void bfs_tree(const K& s);3
+    void dfs(const K& s);
+    void dfsUtil(const K& v, const K& parent, int& time);
+    bool is_descendant(K u, K v);
 
 private:    
     unordered_map<K, Vertex> vertices;

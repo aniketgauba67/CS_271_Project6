@@ -55,9 +55,9 @@ Graph<D, K>::Graph(const vector<K>& keys, const vector<D>& data, const vector<ve
 //========================================================
 
 template<typename D, typename K>
-const typename Graph<D, K>::Vertex* Graph<D, K>::get(K key) const {
+typename Graph<D, K>::Vertex* Graph<D, K>::get(K key) {
     // Iterate over all vertices in the graph's vertex map
-    for (const auto& pair : vertices) {
+    for (auto& pair : vertices) {
         // Check if the current vertex's key matches the given key
         if (pair.second.key == key) {
             return &pair.second; // Return a pointer to the vertex if key matches
@@ -65,6 +65,7 @@ const typename Graph<D, K>::Vertex* Graph<D, K>::get(K key) const {
     }
     return nullptr; // Return nullptr if the key is not found in any vertex
 }
+
 
 //========================================================
 // Edge Exists
@@ -346,31 +347,94 @@ void Graph<D, K>::bfs_tree(const K& s) {
 //     }
 // }
 
-// template <class D, class K> 
-// string Graph<D, K>::edge_class(K u, K v) 
-// { 
-// dfs(); 
-// Vertex* v1 = get(u); 
-// Vertex* v2 = get(v); 
-// if (v1->color == false || v2->color == false) { 
-// // If one of the vertices is not in the graph. 
-// return "no edge"; 
-// } 
-// else if (v2->pi == v1->key) 
-// { 
-// //tree edge, v2 is a direct descendant of v1 return "tree edge";
-// } 
-// else if (v1->distance < v2->distance && v2->distance < v2->f && v2->f < v1->f) 
-// { 
-//     //forward edge, v2 is a descendant of v1 return "forward edge";
-// } 
-// else if (v2->distance <= v1->distance && v1->distance < v1->f && v1->f <= v2->f)
-// { 
-//     //back edge, v2 is an anscestor of v1 return "back edge";
-//     } 
-// else if (v2->distance < v2->f && v2->f < v1->distance && v1->distance < v1->f) 
-// {
-//     //cross edge, neither node is an ancestor or descendant to the other return "cross edge"; 
-//     }
+
+template<typename D, typename K>
+void Graph<D, K>::dfs(const K& s) {
+    // Initialize all vertices as not visited
+    for (auto& pair : vertices) {
+        pair.second.color = false;
+        pair.second.pi = "no parent"; // Initialize parent of all vertices as "no parent"
+    }
+
+    int time = 0; // Initialize time
+
+    // Call the recursive helper function
+    dfsUtil(s, "no parent", time); // Pass "no parent" as parent of source vertex
+}
+
+
+template<typename D, typename K>
+void Graph<D, K>::dfsUtil(const K& v, const K& parent, int& time) {
+    // Mark the current node as visited and set its parent
+    vertices[v].color = true;
+    vertices[v].pi = parent;
+
+    // Update the discovery time
+    vertices[v].distance = ++time;
+
+    // Recur for all vertices adjacent to this vertex
+    for (Vertex* i : vertices[v].adj) {
+        if (!i->color) {
+            dfsUtil(i->key, v, time);
+        }
+    }
+
+    // Update the finish time
+    vertices[v].f = ++time;
+}
+
+template <class D, class K> 
+bool Graph<D, K>::is_descendant(K u, K v) 
+{ 
+    Vertex* v1 = get(u); 
+    Vertex* v2 = get(v); 
+
+    // Check if v2 is a descendant of v1
+    while (v2 != nullptr && v2->key != v1->key) {
+        v2 = get(v2->pi);
+    }
+
+    return v2 != nullptr;
+}
+
+template <class D, class K> 
+string Graph<D, K>::edge_class(K u, K v) 
+{ 
+    Vertex* v1 = get(u); 
+    Vertex* v2 = get(v); 
+
+    // Determine the correct starting point for the DFS
+    K start = (v1->distance < v2->distance) ? u : v;
+
+    // Perform the DFS
+    dfs(start);
+
+    if (v1->color == false || v2->color == false) { 
+        // If one of the vertices is not in the graph. 
+        return "no edge"; 
+    } 
+    else if (v2->pi == v1->key && v2->distance > v1->distance) 
+    { 
+        // Tree edge, v2 is a direct descendant of v1
+        return "tree edge";
     
-// return "no edge"; }
+    } 
+    else if (v2->distance > v1->distance && v2->f < v1->f && is_descendant(u, v) && v2->pi != v1->key) 
+    { 
+        // Forward edge, v2 is a descendant of v1 but not a direct child
+        return "forward edge";
+    } 
+    else if (v2->distance <= v1->distance && v2->f > v1->f)
+    { 
+        // Back edge, v2 is an ancestor of v1
+        return "back edge";
+    } 
+    else if (v2->distance < v2->f && v1->distance < v1->f) 
+    {
+        // Cross edge, neither node is an ancestor or descendant to the other
+        return "cross edge"; 
+    }
+    
+    return "no edge"; 
+}
+
