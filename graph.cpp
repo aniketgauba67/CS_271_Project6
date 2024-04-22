@@ -4,8 +4,9 @@
 #include <queue>
 #include <map>
 #include <unordered_set>
-#include <unordered_map>
 #include <list>
+#include <stack>
+#include <unordered_map>
 
 
 using namespace std;
@@ -124,74 +125,59 @@ void Graph<D, K>::bfs(const K& s) {
     }
 }
 
-// Create the function print_path
-template <typename D, typename K>
-void print_path(K u, K v, unordered_map<K, list<K>> &graph)
-{
-    // Check if the start and end vertices are in the graph
-    if (graph.find(u) == graph.end() || graph.find(v) == graph.end())
-    {
-        cout << "Invalid vertex key" << endl;
-        return;
-    }
-    queue<K> q;                      // Queue for BFS
-    unordered_map<K, K> predecessor; // Map to store the predecessor of each vertex
-    unordered_set<K> visited;        // Set to store visited vertices
-    list<K> path;
+template<typename D, typename K>
+void Graph<D, K>::print_path(const K& u, const K& v) {
 
-    // Start BFS from the vertex 'u'
-    q.push(u);
-    visited.insert(u);
+    unordered_map<K, bool> visited;
+    unordered_map<K, K> parent;
 
-    bool found = false;
-    while (!q.empty() && !found)
-    {
-        K current = q.front();
-        q.pop();
+    // Create a queue for BFS
+    queue<Vertex*> queue;
 
-        // Check if we have reached the destination vertex
-        if (current == v)
-        {
-            found = true;
-            break;
-        }
+    // Mark the current node as visited and enqueue it
+    visited[u] = true;
+    queue.push(&vertices[u]);
 
-        // Explore each adjacent vertex
-        for (const K &adj : graph[current])
-        {
-            if (visited.find(adj) == visited.end())
-            {
-                visited.insert(adj);
-                q.push(adj);
-                predecessor[adj] = current;
+    while(!queue.empty()) {
+
+        // Dequeue a vertex from queue
+        Vertex* vertex = queue.front();
+        queue.pop();
+
+        // Get all adjacent vertices thats been de-queued
+        // If an adjacent vertex has not been visited, then mark it visited, update parent and enqueue it
+        for(auto i = vertex->adj.begin(); i != vertex->adj.end(); ++i) {
+            if (!visited[(*i)->key]) {
+                visited[(*i)->key] = true;
+                parent[(*i)->key] = vertex->key;  // Update parent
+                queue.push(*i);
             }
         }
     }
 
-    // If 'v' was not reached from 'u'
-    if (!found)
-    {
-        cout << "No path exists from " << u << " to " << v << endl;
+    // If BFS is complete without visiting v
+    if (!visited[v]) {
+        cout << "No path exists from: " << u << " and " << v << endl;
         return;
     }
 
-    // Backtrack from 'v' to 'u' using the 'predecessor' map to find the path
-    for (K current = v; current != u; current = predecessor[current])
-    {
-        path.push_front(current);
+    // If a path exists, we get it from the parent
+    list<K> path;
+    for (K vertex = v; vertex != u; vertex = parent[vertex]) {
+        path.push_front(vertex);
     }
     path.push_front(u);
 
     // Print the path
     auto it = path.begin();
     cout << *it;
-    ++it;
-    while (it != path.end())
-    {
+    for (++it; it != path.end(); ++it) {
         cout << " -> " << *it;
-        ++it;
     }
 
+    // THis removes any white space that gives us an error
+    cout << flush;
 }
+
 
 
