@@ -43,23 +43,79 @@ Graph<string, string> *generate_graph(string fname)
     return G;
 }
 
-void test_get(Graph<string, string> *G)
-{
-    try
-    {
-        if (G->get("S") == nullptr || G->get("S")->data != "S data")
-        {
-            cout << "Incorrect result getting vertex \"s\"" << endl;
-        }
-        if (G->get("a") != nullptr)
-        {
-            cout << "Incorrect result getting non-existant vertex \"a\"" << endl;
-        }
-    }
+// void test_get(Graph<string, string> *G)
+// {
+//     try
+//     {
+//         if (G->get("S") == nullptr || G->get("S")->data != "S data")
+//         {
+//             cout << "Incorrect result getting vertex \"s\"" << endl;
+//         }
+//         if (G->get("a") != nullptr)
+//         {
+//             cout << "Incorrect result getting non-existant vertex \"a\"" << endl;
+//         }
+//     }
     
-    catch (exception& e) {
-        cerr << "Error testing empty graph: " << e.what() << endl;
+//     catch (exception& e) {
+//         cerr << "Error testing empty graph: " << e.what() << endl;
+//     }
+// }
+
+#include <iostream>
+#include <cassert>
+
+// Assuming the Graph class and its dependencies are included above this
+void test_get(Graph<string, string>* G) {
+    // Test with an empty graph
+    assert(G->get("S") == nullptr);
+    cout << "Empty graph test passed." << endl;
+
+    // Test with a single vertex
+    G->add("S", "S data");
+    auto s_vertex = G->get("S");
+    if (s_vertex != nullptr && s_vertex->data == "S data") {
+        cout << "Single vertex test passed." << endl;
+    } else {
+        cerr << "Single vertex test failed." << endl;
     }
+
+    // Test non-existent vertex in a graph with one vertex
+    assert(G->get("a") == nullptr);
+    cout << "Non-existent vertex test passed." << endl;
+
+    // Adding more vertices
+    G->add("T", "T data");
+    G->add("Empty", nullptr);
+    G->add("s", "small s data");
+
+    // Test retrieval of multiple vertices
+    auto t_vertex = G->get("T");
+    auto s_small_vertex = G->get("s");
+    if (t_vertex != nullptr && t_vertex->data == "T data" &&
+        s_small_vertex != nullptr && s_small_vertex->data == "small s data") {
+        cout << "Multiple vertices test passed." << endl;
+    } else {
+        cerr << "Multiple vertices test failed." << endl;
+    }
+
+    // Test case sensitivity
+    if (G->get("S") != G->get("s")) {
+        cout << "Case sensitivity test passed." << endl;
+    } else {
+        cerr << "Case sensitivity test failed." << endl;
+    }
+
+    // Test special character data
+    auto empty_vertex = G->get("Empty");
+    if (empty_vertex == nullptr || empty_vertex->data == "") {
+        cout << "Special character data test passed." << endl;
+    } else {
+        cerr << "Special character data test failed." << endl;
+    }
+
+    // Clear the graph for further testing or reset it as needed
+    // This step depends on whether Graph has a clear or reset method implemented
 }
 
 

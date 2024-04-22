@@ -26,6 +26,12 @@ public:
     string edge_class(const K u, const K v);
     void bfs_tree(const K& s);
     bool edge_exists(const K& u, const K& v);
+    void add(V key, E data) {
+    Vertex newVertex;
+    newVertex.key = key;
+    newVertex.data = data;
+    vertices[key] = newVertex;
+    }
 
 private:    
     unordered_map<K, Vertex> vertices;
