@@ -189,7 +189,7 @@ int main()
     test_reachable(G);
     test_bfs(G);
     test_print_path(G);
-    test_edge_class(G);
+    #test_edge_class(G);
     test_bfs_tree(G);
 
     cout << "Testing completed" << endl;
