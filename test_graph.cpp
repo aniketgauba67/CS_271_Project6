@@ -181,6 +181,84 @@ void test_bfs_tree(Graph<string, string> *G)
     }
 }
 
+
+
+
+
+
+
+// For the get function
+
+void test_get_more_complex(Graph<int, string> *G) {
+    // Test retrieval after multiple sequential modifications
+    try {
+        // Add multiple vertices
+        G->add_vertex("AA", 12);
+        G->add_vertex("BB", 13);
+        G->add_vertex("CC", 14);
+
+        // Remove vertex and then test retrieval of remaining vertices
+        G->remove_vertex("BB");
+        if (G->get("BB") != nullptr) {
+            cout << "Test failed: 'get(\"BB\")' after removal should return nullptr" << endl;
+        }
+
+        if (G->get("AA") == nullptr || G->get("AA")->data != 12) {
+            cout << "Test failed: 'get(\"AA\")' should return vertex with data 12" << endl;
+        }
+        
+        if (G->get("CC") == nullptr || G->get("CC")->data != 14) {
+            cout << "Test failed: 'get(\"CC\")' should return vertex with data 14" << endl;
+        }
+
+        // Re-add a vertex previously deleted and check its data retrieval
+        G->add_vertex("BB", 15);
+        auto result = G->get("BB");
+        if (result == nullptr || result->data != 15) {
+            cout << "Test failed: 'get(\"BB\")' after re-adding should return vertex with data 15" << endl;
+        }
+    } catch (exception &e) {
+        cerr << "Error in more complex get test: " << e.what() << endl;
+    }
+}
+
+
+
+
+
+
+// Test for the reachable function
+
+void test_reachable_Ryan_test(Graph<int, string> *G) {
+    // Testing reachability after complex graph manipulations
+    try {
+        G->add_edge("AA", "CC");
+        G->add_edge("CC", "BB");
+        G->add_vertex("DD", 16);
+        G->add_edge("BB", "DD");
+
+        if (!G->reachable("AA", "DD")) {
+            cout << "Test failed: 'DD' should be reachable from 'AA' through 'CC' and 'BB'" << endl;
+        }
+
+        G->remove_edge("CC", "BB");
+        if (G->reachable("AA", "DD")) {
+            cout << "Test failed: 'DD' should not be reachable from 'AA' after removing 'CC' to 'BB' edge" << endl;
+        }
+
+        // Ensure reachability is correctly updated after re-adding the edge
+        G->add_edge("CC", "BB");
+        if (!G->reachable("AA", "DD")) {
+            cout << "Test failed: 'DD' should be reachable from 'AA' after re-adding 'CC' to 'BB' edge" << endl;
+        }
+    } catch (exception &e) {
+        cerr << "Error in more complex reachable test: " << e.what() << endl;
+    }
+}
+
+
+
+
 int main()
 {
 
@@ -191,6 +269,10 @@ int main()
     test_print_path(G);
     //test_edge_class(G);
     test_bfs_tree(G);
+
+
+    test_get_more_complex(G);
+    test_reachable_Ryan_test(G);
 
     cout << "Testing completed" << endl;
 
