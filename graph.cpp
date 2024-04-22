@@ -441,43 +441,76 @@ bool Graph<D, K>::is_descendant(K u, K v)
     return v2 != nullptr;
 }
 
-template <class D, class K>
+// template <class D, class K>
+// string Graph<D, K>::edge_class(K u, K v)
+// {
+//     Vertex *v1 = get(u);
+//     Vertex *v2 = get(v);
+
+//     // Determine the correct starting point for the DFS
+//     K start = (v1->distance < v2->distance) ? u : v;
+
+//     // Perform the DFS
+//     dfs(start);
+
+//     if (v1->color == false || v2->color == false)
+//     {
+//         // If one of the vertices is not in the graph.
+//         return "no edge";
+//     }
+//     else if (v2->pi == v1->key && v2->distance > v1->distance)
+//     {
+//         // Tree edge, v2 is a direct descendant of v1
+//         return "tree edge";
+//     }
+//     else if (v2->distance > v1->distance && v2->f < v1->f && is_descendant(u, v) && v2->pi != v1->key)
+//     {
+//         // Forward edge, v2 is a descendant of v1 but not a direct child
+//         return "forward edge";
+//     }
+//     else if (v2->distance <= v1->distance && v2->f > v1->f)
+//     {
+//         // Back edge, v2 is an ancestor of v1
+//         return "back edge";
+//     }
+//     else if (v2->distance < v2->f && v1->distance < v1->f)
+//     {
+//         // Cross edge, neither node is an ancestor or descendant to the other
+//         return "cross edge";
+//     }
+
+//     return "no edge";
+// }
+
+template <class D, class K> 
 string Graph<D, K>::edge_class(K u, K v)
-{
-    Vertex *v1 = get(u);
-    Vertex *v2 = get(v);
-
-    // Determine the correct starting point for the DFS
-    K start = (v1->distance < v2->distance) ? u : v;
-
-    // Perform the DFS
-    dfs(start);
-
-    if (v1->color == false || v2->color == false)
-    {
-        // If one of the vertices is not in the graph.
-        return "no edge";
-    }
-    else if (v2->pi == v1->key && v2->distance > v1->distance)
-    {
-        // Tree edge, v2 is a direct descendant of v1
-        return "tree edge";
-    }
-    else if (v2->distance > v1->distance && v2->f < v1->f && is_descendant(u, v) && v2->pi != v1->key)
-    {
-        // Forward edge, v2 is a descendant of v1 but not a direct child
-        return "forward edge";
-    }
-    else if (v2->distance <= v1->distance && v2->f > v1->f)
-    {
-        // Back edge, v2 is an ancestor of v1
-        return "back edge";
-    }
-    else if (v2->distance < v2->f && v1->distance < v1->f)
-    {
-        // Cross edge, neither node is an ancestor or descendant to the other
-        return "cross edge";
-    }
-
-    return "no edge";
+{ 
+dfs(); 
+Vertex* v1 = get(u); 
+Vertex* v2 = get(v); 
+if (v1->color == false || v2->color == false) 
+{ 
+    // If one of the vertices is not in the graph. 
+    return "no edge"; 
+    } 
+else if (v2->pi == v1->key) 
+{ 
+    //tree edge, v2 is a direct descendant of v1 
+    return "tree edge"; 
+    } 
+else if (v1->distance < v2->distance && v2->distance < v2->f && v2->f < v1->f) 
+{ 
+    //forward edge, v2 is a descendant of v1
+    return "forward edge"; 
+    } 
+else if (v2->distance <= v1->distance && v1->distance < v1->f && v1->f <= v2->f) 
+{ //back edge, v2 is an anscestor of v1
+return "back edge"; 
+}
+ else if (v2->distance < v2->f && v2->f < v1->distance && v1->distance < v1->f) 
+ { 
+    //cross edge, neither node is an ancestor or descendant to the other
+    return "cross edge";
+    } 
+return "no edge"; 
 }
