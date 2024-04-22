@@ -179,7 +179,7 @@ void Graph<D, K>::print_path(const K& u, const K& v) {
     cout << flush;
 }
 
-
+template<typename D, typename K>
 string edge_class(int u, int v, const vector<vector<int>>& adjList)
 {
     map<int, int> level;
@@ -224,3 +224,53 @@ string edge_class(int u, int v, const vector<vector<int>>& adjList)
     }
 }
 
+template<typename D, typename K>
+void Graph<D, K>::bfs_tree(const K& s) {
+
+    unordered_map<K, bool> visited;
+    queue<Vertex*> queue;
+
+    // Mark the current node as visited and add it to the queue
+    visited[s] = true;
+    queue.push(&vertices[s]);
+
+    // Create a map to store the depth for each vertex
+    unordered_map<K, int> depth;
+    depth[s] = 0;
+
+    // Create a map to store the vertices at each depth level
+    map<int, vector<K>> levels;
+    levels[0].push_back(s);
+
+    while(!queue.empty()) {
+        // Remove the vertex from queue
+        Vertex* vertex = queue.front();
+        queue.pop();
+
+        // Get all adjacent vertices of the removed vertex
+        // If an adjacent vertex has not been visited, then mark it visited, update depth and put it in the quEue
+        for(auto i = vertex->adj.begin(); i != vertex->adj.end(); ++i) {
+            if (!visited[(*i)->key]) {
+                visited[(*i)->key] = true;
+                depth[(*i)->key] = depth[vertex->key] + 1;  // Update depth
+                levels[depth[(*i)->key]].push_back((*i)->key);
+                queue.push(*i);
+            }
+        }
+    }
+
+    // This prints us our tree
+    auto it = levels.begin();
+    for(/*Nothing Needed Here*/; it != levels.end(); ++it) {
+        for(size_t i = 0; i < it->second.size(); ++i) {
+            if(i != it->second.size() - 1) {
+                cout << it->second[i] << " ";
+            } else {
+                cout << it->second[i];
+            }
+        }
+        if(next(it) != levels.end()) {
+            cout << endl;
+        }
+    }
+}
