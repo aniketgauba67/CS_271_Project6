@@ -28,7 +28,7 @@ public:
     void print_path(const K& u, const K& v);
     string edge_class(const K u, const K v);
     bool edge_exists(const K& u, const K& v);
-    void bfs_tree(const K& s);3
+    void bfs_tree(const K& s);
     void dfs(const K& s);
     void dfsUtil(const K& v, const K& parent, int& time);
     bool is_descendant(K u, K v);
