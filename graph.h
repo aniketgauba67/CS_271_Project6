@@ -23,7 +23,7 @@ public:
     bool reachable(const K& u, const K& v);
     void bfs(const K& s);
     void print_path(const K& u, const K& v);
-    string edge_class(const K& u, const K& v);
+    string edge_class(const K u, const K v);
     void bfs_tree(const K& s);
     bool edge_exists(const K& u, const K& v);
 
