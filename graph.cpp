@@ -180,7 +180,7 @@ void Graph<D, K>::print_path(const K& u, const K& v) {
 }
 
 
-string edge_class(int u, int v)
+string edge_class(int u, int v, const vector<vector<int>>& adjList)
 {
     map<int, int> level;
     queue<int> q;
