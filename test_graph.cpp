@@ -56,11 +56,67 @@ void test_get(Graph<string, string> *G)
             cout << "Incorrect result getting non-existant vertex \"a\"" << endl;
         }
     }
-    catch (exception &e)
-    {
-        cerr << "Error getting vertex from graph : " << e.what() << endl;
+    // Testing with string keys and string data
+    Graph<string, string> stringGraph;
+    stringGraph.addVertex("S", "S data");
+    stringGraph.addVertex("T", "T data");
+
+    try {
+        const auto sResult = stringGraph.get("S");
+        const auto tResult = stringGraph.get("T");
+        const auto noResult = stringGraph.get("A");
+
+        if (sResult == nullptr || sResult->data != "S data") {
+            cout << "Incorrect result getting vertex \"S\"" << endl;
+        }
+        if (tResult == nullptr || tResult->data != "T data") {
+            cout << "Incorrect result getting vertex \"T\"" << endl;
+        }
+        if (noResult != nullptr) {
+            cout << "Incorrect result: Non-existent vertex \"A\" was found" << endl;
+        }
+    }
+    catch (exception& e) {
+        cerr << "Error testing string graph: " << e.what() << endl;
+    }
+
+    // Testing with int keys and double data
+    Graph<double, int> intDoubleGraph;
+    intDoubleGraph.addVertex(1, 1.1);
+    intDoubleGraph.addVertex(2, 2.2);
+
+    try {
+        const auto oneResult = intDoubleGraph.get(1);
+        const auto twoResult = intDoubleGraph.get(2);
+        const auto noIntResult = intDoubleGraph.get(3);
+
+        if (oneResult == nullptr || oneResult->data != 1.1) {
+            cout << "Incorrect result getting vertex 1" << endl;
+        }
+        if (twoResult == nullptr || twoResult->data != 2.2) {
+            cout << "Incorrect result getting vertex 2" << endl;
+        }
+        if (noIntResult != nullptr) {
+            cout << "Incorrect result: Non-existent vertex 3 was found" << endl;
+        }
+    }
+    catch (exception& e) {
+        cerr << "Error testing int-double graph: " << e.what() << endl;
+    }
+
+    // Empty graph test
+    Graph<int, string> emptyGraph;
+    try {
+        const auto emptyResult = emptyGraph.get("Empty");
+        if (emptyResult != nullptr) {
+            cout << "Error: Got a vertex from an empty graph" << endl;
+        }
+    }
+    catch (exception& e) {
+        cerr << "Error testing empty graph: " << e.what() << endl;
     }
 }
+
 
 void test_reachable(Graph<string, string> *G)
 {
