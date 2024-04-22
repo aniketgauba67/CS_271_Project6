@@ -3,6 +3,7 @@
 #include <vector>
 #include <queue>
 #include <map>
+#include <unordered_set>
 
 
 using namespace std;
@@ -121,5 +122,74 @@ void Graph<D, K>::bfs(const K& s) {
     }
 }
 
+// Create the function print_path
+template <typename D, typename K>
+void print_path(K u, K v, unordered_map<K, list<K>> &graph)
+{
+    // Check if the start and end vertices are in the graph
+    if (graph.find(u) == graph.end() || graph.find(v) == graph.end())
+    {
+        cout << "Invalid vertex key" << endl;
+        return;
+    }
+    queue<K> q;                      // Queue for BFS
+    unordered_map<K, K> predecessor; // Map to store the predecessor of each vertex
+    unordered_set<K> visited;        // Set to store visited vertices
+    list<K> path;
+
+    // Start BFS from the vertex 'u'
+    q.push(u);
+    visited.insert(u);
+
+    bool found = false;
+    while (!q.empty() && !found)
+    {
+        K current = q.front();
+        q.pop();
+
+        // Check if we have reached the destination vertex
+        if (current == v)
+        {
+            found = true;
+            break;
+        }
+
+        // Explore each adjacent vertex
+        for (const K &adj : graph[current])
+        {
+            if (visited.find(adj) == visited.end())
+            {
+                visited.insert(adj);
+                q.push(adj);
+                predecessor[adj] = current;
+            }
+        }
+    }
+
+    // If 'v' was not reached from 'u'
+    if (!found)
+    {
+        cout << "No path exists from " << u << " to " << v << endl;
+        return;
+    }
+
+    // Backtrack from 'v' to 'u' using the 'predecessor' map to find the path
+    for (K current = v; current != u; current = predecessor[current])
+    {
+        path.push_front(current);
+    }
+    path.push_front(u);
+
+    // Print the path
+    auto it = path.begin();
+    cout << *it;
+    ++it;
+    while (it != path.end())
+    {
+        cout << " -> " << *it;
+        ++it;
+    }
+
+}
 
 
