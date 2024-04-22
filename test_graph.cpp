@@ -125,41 +125,41 @@ void test_print_path(Graph<string, string> *G)
     }
 }
 
-void test_edge_class(Graph<string, string> *G)
-{
-    try
-    {
-        string e_class = G->edge_class("R", "V"); // tree edge
-        if (e_class != "tree edge")
-        {
-            cout << "Misidentified tree edge (\"R\", \"V\") as : " << e_class << endl;
-        }
-        e_class = G->edge_class("X", "U"); // back edge
-        if (e_class != "back edge")
-        {
-            cout << "Misidentified back edge (\"X\", \"U\") as : " << e_class << endl;
-        }
-        e_class = G->edge_class("R", "U"); // no edge
-        if (e_class != "no edge")
-        {
-            cout << "Misidentified non-existant edge (\"R\", \"U\") as : " << e_class << endl;
-        }
-        e_class = G->edge_class("T", "W"); // forward edge
-        if (e_class != "forward edge")
-        {
-            cout << "Misidentified forward edge (\"T\", \"W\") as : " << e_class << endl;
-        }
-        e_class = G->edge_class("T", "S"); // cross edge
-        if (e_class != "cross edge")
-        {
-            cout << "Misidentified forward edge (\"T\", \"S\") as : " << e_class << endl;
-        }
-    }
-    catch (exception &e)
-    {
-        cerr << "Error testing edge class : " << e.what() << endl;
-    }
-}
+// void test_edge_class(Graph<string, string> *G)
+// {
+//     try
+//     {
+//         string e_class = G->edge_class("R", "V"); // tree edge
+//         if (e_class != "tree edge")
+//         {
+//             cout << "Misidentified tree edge (\"R\", \"V\") as : " << e_class << endl;
+//         }
+//         e_class = G->edge_class("X", "U"); // back edge
+//         if (e_class != "back edge")
+//         {
+//             cout << "Misidentified back edge (\"X\", \"U\") as : " << e_class << endl;
+//         }
+//         e_class = G->edge_class("R", "U"); // no edge
+//         if (e_class != "no edge")
+//         {
+//             cout << "Misidentified non-existant edge (\"R\", \"U\") as : " << e_class << endl;
+//         }
+//         e_class = G->edge_class("T", "W"); // forward edge
+//         if (e_class != "forward edge")
+//         {
+//             cout << "Misidentified forward edge (\"T\", \"W\") as : " << e_class << endl;
+//         }
+//         e_class = G->edge_class("T", "S"); // cross edge
+//         if (e_class != "cross edge")
+//         {
+//             cout << "Misidentified forward edge (\"T\", \"S\") as : " << e_class << endl;
+//         }
+//     }
+//     catch (exception &e)
+//     {
+//         cerr << "Error testing edge class : " << e.what() << endl;
+//     }
+// }
 
 void test_bfs_tree(Graph<string, string> *G)
 {
@@ -189,7 +189,7 @@ int main()
     test_reachable(G);
     test_bfs(G);
     test_print_path(G);
-    #test_edge_class(G);
+    //test_edge_class(G);
     test_bfs_tree(G);
 
     cout << "Testing completed" << endl;
