@@ -302,50 +302,50 @@ void Graph<D, K>::bfs_tree(const K& s) {
     }
 }
 
-// template<typename D, typename K>
-// string edge_class(int u, int v, const vector<vector<int>>& adjList)
-// {
-//     map<int, int> level;
-//     queue<int> q;
-//     q.push(u);
-//     level[u] = 0;
+template<typename D, typename K>
+string edge_class(int u, int v, const vector<vector<int>>& adjList)
+{
+    map<int, int> level;
+    queue<int> q;
+    q.push(u);
+    level[u] = 0;
 
-//     while (!q.empty())
-//     {
-//         int current = q.front();
-//         q.pop();
+    while (!q.empty())
+    {
+        int current = q.front();
+        q.pop();
 
-//         for (int adj : adjList[current])
-//         {
-//             if (level.count(adj) == 0)
-//             {
-//                 q.push(adj);
-//                 level[adj] = level[current] + 1;
-//             }
-//         }
-//     }
+        for (int adj : adjList[current])
+        {
+            if (level.count(adj) == 0)
+            {
+                q.push(adj);
+                level[adj] = level[current] + 1;
+            }
+        }
+    }
 
-//     if (level.count(v) == 0)
-//     {
-//         return "no edge";
-//     }
-//     else if (level[v] == level[u] + 1)
-//     {
-//         return "tree edge";
-//     }
-//     else if (level[v] < level[u])
-//     {
-//         return "back edge";
-//     }
-//     else if (level[v] > level[u] + 1)
-//     {
-//         return "forward edge";
-//     }
-//     else if (level[v] == level[u])
-//     {
-//         return "cross edge";
-//     }
-// }
+    if (level.count(v) == 0)
+    {
+        return "no edge";
+    }
+    else if (level[v] == level[u] + 1)
+    {
+        return "tree edge";
+    }
+    else if (level[v] < level[u])
+    {
+        return "back edge";
+    }
+    else if (level[v] > level[u] + 1)
+    {
+        return "forward edge";
+    }
+    else if (level[v] == level[u])
+    {
+        return "cross edge";
+    }
+}
 
 
 template<typename D, typename K>
