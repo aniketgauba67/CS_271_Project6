@@ -1,483 +1,392 @@
-#include "graph.h"
 #include <iostream>
 #include <vector>
 #include <queue>
-#include <map>
-#include <unordered_set>
-#include <list>
-#include <stack>
-#include <unordered_map>
-#include <string>
+#include <sstream>
+
+#include "vertex.h"
+#include "graph.h"
 
 using namespace std;
 //========================================================
-// Graph
-// Constructs a graph using specified nodes, data, and edges.
-// Parameters: keys, data, edges
-// Pre-condition:
-//  keys, data, and edges must all be of the same size, ensuring that each key
-//  has corresponding node data and a list of edges.
-//  Each value in the edges vector must be a valid key existing within the keys vector.
-// Post-condition:
-//  A new Graph object is created with each node initialized with its key, data,
-//  and adjacency list. Nodes are interconnected as per the adjacency lists provided
-//  in `edges`. If the preconditions are not met, the graph may be partially constructed
-//  or not constructed at all, particularly if the vector sizes mismatch, in which case
-//  the constructor will terminate early.
+// Constructor: Graph
+// Purpose: Constructs a graph data structure by initializing vertices with provided data and connecting them according to the specified adjacency lists.
+// Parameters:
+//   - vertexKeys
+//   - vertexData 
+//   - adjacencyLists
+// Preconditions:
+//   - The size of vertexKeys, vertexData, and adjacencyLists must be the same, ensuring that each vertex key has an associated data entry and an adjacency list.
+//   - Each key within the sub-vectors of adjacencyLists should exist within vertexKeys to ensure all connections refer to valid vertices.
+// Postconditions:
+//   - A graph is created with vertices initialized with corresponding keys and data. Each vertex is connected to others as specified by the adjacencyLists.
+//   - If the precondition is not met (e.g., mismatched vector sizes or invalid keys in adjacencyLists), the constructor may throw an exception or result in an incomplete or invalid graph construction.
+// Return: None 
+//========================================================
+
+template <typename DataType, typename KeyType>
+Graph<DataType, KeyType>::Graph(vector<KeyType> vertexKeys, vector<DataType> vertexData, vector<vector<KeyType>> adjacencyLists)
+{
+    Vertex<DataType, KeyType> *newVertex;
+    for (int i = 0; i < vertexKeys.size(); ++i)
+    {
+        newVertex = new Vertex<DataType, KeyType>(vertexData[i], vertexKeys[i]); // Create a new vertex with data and key
+        newVertex->bfsProps.adjacencyList = adjacencyLists[i]; // Assign the adjacency list to the vertex's BFS properties
+        this->vertices.push_back(newVertex); // Add the new vertex to the graph's vertex list
+    }
+}
+
+//========================================================
+// Method: get
+// Purpose: Retrieves a vertex from the graph based on the specified search key.
+// Parameters:
+//   - searchKey (KeyType)
+// Preconditions: None
+// Postconditions: None
+// Returns:
+//   - Vertex<DataType, KeyType>*: A pointer to the vertex with the matching key, if found.
+//   - nullptr: If no vertex with the specified key is found in the graph.
+//========================================================
+
+template <typename DataType, typename KeyType>
+Vertex<DataType, KeyType>* Graph<DataType, KeyType>::get(KeyType searchKey)
+{
+    for (int index = 0; index < vertices.size(); ++index)
+    {
+        if (vertices[index]->key == searchKey)
+        {
+            return vertices[index]; // Return the vertex if the key matches
+        }
+    }
+
+    return nullptr; // Return nullptr if no vertex matches the search key
+}
+
+
+//========================================================
+// Method: bfs
+// Purpose: Performs a breadth-first search (BFS) on the graph starting from the specified vertex.
+// Parameters:
+//   - startKey
+// Precondition: None
+// Postcondition: None
 // Return: None
 //========================================================
-template <typename D, typename K>
-Graph<D, K>::Graph(const vector<K> &keys, const vector<D> &data, const vector<vector<K>> &edges)
+
+template <typename DataType, typename KeyType>
+void Graph<DataType, KeyType>::bfs(KeyType startKey)
 {
-    if (keys.size() != data.size() || keys.size() != edges.size())
+    Vertex<DataType, KeyType> *nextVertex;
+    queue<Vertex<DataType, KeyType> *> vertexQueue;
+    Vertex<DataType, KeyType> *currentVertex = this->get(startKey);
+
+    // Reset all vertices to default state
+    for (Vertex<DataType, KeyType> *vertex : this->vertices)
     {
-        return; // Early return if sizes do not match, ensuring precondition is met.
+        vertex->color = false;
+        vertex->distance = -1;
+        vertex->p = nullptr;
     }
-
-    for (size_t i = 0; i < keys.size(); ++i)
-    {
-        vertices[keys[i]].data = data[i]; // Mapping data to keys.
-        vertices[keys[i]].key = keys[i];  // Storing the key inside the node.
-    }
-
-    for (size_t i = 0; i < edges.size(); ++i)
-    {
-        for (const K &key : edges[i])
-        {
-            vertices[keys[i]].adj.push_back(&vertices[key]); // Establishing node connections.
-        }
-    }
-}
-
-//========================================================
-// Get
-// Retrieves a vertex from the graph using its unique key.
-// Parameters: key
-// Pre-condition: None
-// Post-condition: None
-// Return: Constant pointer to the vertex if the key is found, otherwise nullptr.
-//========================================================
-
-template <typename D, typename K>
-typename Graph<D, K>::Vertex *Graph<D, K>::get(K key)
-{
-    // Iterate over all vertices in the graph's vertex map
-    for (auto &pair : vertices)
-    {
-        // Check if the current vertex's key matches the given key
-        if (pair.second.key == key)
-        {
-            return &pair.second; // Return a pointer to the vertex if key matches
-        }
-    }
-    return nullptr; // Return nullptr if the key is not found in any vertex
-}
-
-//========================================================
-// Edge Exists
-// Determines whether an edge exists between two vertices identified by their keys.
-// Parameters:
-//   u - The key of the first vertex.
-//   v - The key of the second vertex.
-// Pre-condition: None
-// Post-condition: None
-// Return:
-//   Boolean value indicating whether an edge exists between the two vertices:
-//   returns true if there is an edge from vertex u to vertex v, otherwise false.
-//========================================================
-template <typename D, typename K>
-bool Graph<D, K>::edge_exists(const K &u, const K &v)
-{
-    Vertex *u_vertex = get(u); // Retrieve the vertex corresponding to key u
-    if (u_vertex == nullptr)
-    {
-        return false; // If vertex u does not exist, return false
-    }
-    // Check if any of the adjacent vertices of u has the key v
-    for (Vertex *adj_vertex : u_vertex->adj)
-    {
-        if (adj_vertex->key == v)
-        {
-            return true; // Return true if vertex v is found in the adjacency list of vertex u
-        }
-    }
-    return false; // Return false if no adjacency from u to v is found
-}
-
-//========================================================
-// Reachable
-// Determines if there is a path from vertex u to vertex v using Breadth-First Search (BFS).
-// Parameters:
-//   u - The key of the starting vertex.
-//   v - The key of the destination vertex.
-// Pre-condition:
-//   Both u and v should be valid keys of vertices within the graph.
-// Post-condition: None
-// Return:
-//   Boolean value indicating whether there is a path from u to v:
-//   returns true if such a path exists, otherwise false.
-//========================================================
-template <typename D, typename K>
-bool Graph<D, K>::reachable(const K &u, const K &v)
-{
-    // Create a map to track visited vertices
-    unordered_map<K, bool> visited;
-
-    // Initialize a queue for BFS
-    queue<Vertex *> queue;
-
-    // Start from the vertex u
-    visited[u] = true;
-    queue.push(&vertices[u]);
-
-    while (!queue.empty())
-    {
-        // Process the front vertex in the queue
-        Vertex *vertex = queue.front();
-        queue.pop();
-
-        // Explore all adjacent vertices
-        for (auto i = vertex->adj.begin(); i != vertex->adj.end(); ++i)
-        {
-            if (!visited[(*i)->key])
-            {
-                // Check if the adjacent vertex is the destination
-                if ((*i)->key == v)
-                    return true;
-
-                // Mark the vertex as visited and add to the queue
-                visited[(*i)->key] = true;
-                queue.push(*i);
-            }
-        }
-    }
-
-    // Return false if no path found after BFS completion
-    return false;
-}
-
-//========================================================
-// BFS (Breadth-First Search)
-// Performs a breadth-first search on the graph starting from a given vertex,
-// marking each visited node and updating the distance from the start vertex.
-// Parameters:
-//   s - The key of the starting vertex for BFS.
-// Pre-condition:
-//   s should be a valid key of a vertex within the graph.
-// Post-condition:
-//   Marks all reachable vertices from s as visited, assigns distances from s,
-//   and explores the graph layer by layer.
-// Return: None
-//========================================================
-template <typename D, typename K>
-void Graph<D, K>::bfs(const K &s)
-{
-    // Map to store the visited status of each vertex
-    unordered_map<K, bool> visited;
-
-    // Queue to manage the BFS frontier
-    queue<Vertex *> queue;
 
     // Initialize the starting vertex
-    visited[s] = true;
-    vertices[s].distance = 0; // Distance from start vertex to itself is 0
-    queue.push(&vertices[s]);
+    currentVertex->color = true;
+    currentVertex->distance = 0;
+    currentVertex->p = nullptr;
+    vertexQueue.push(currentVertex);
 
-    while (!queue.empty())
+    while (!vertexQueue.empty())
     {
-        // Process the current vertex at the front of the queue
-        Vertex *vertex = queue.front();
-        queue.pop();
-
-        // Explore each adjacent vertex
-        for (auto i = vertex->adj.begin(); i != vertex->adj.end(); ++i)
-        {
-            if (!visited[(*i)->key])
-            {
-                visited[(*i)->key] = true;             // Mark the vertex as visited
-                (*i)->distance = vertex->distance + 1; // Update the distance for this vertex
-                queue.push(*i);                        // Enqueue the vertex for further exploration
-            }
-        }
-    }
-}
-
-//========================================================
-// Print Path
-// Finds and prints the shortest path between two vertices using BFS.
-// Parameters:
-//   u - The key of the starting vertex.
-//   v - The key of the destination vertex.
-// Pre-condition:
-//   Both u and v should be valid keys of vertices within the graph.
-// Post-condition:
-//   Prints the shortest path from vertex u to vertex v if it exists.
-//   If no path exists, a message indicating non-existence is printed.
-// Return: None
-//========================================================
-template <typename D, typename K>
-void Graph<D, K>::print_path(const K &u, const K &v)
-{
-    unordered_map<K, bool> visited;
-    unordered_map<K, K> parent; // Maps each vertex to its parent in the BFS tree
-
-    // Queue for managing the BFS frontier
-    queue<Vertex *> queue;
-
-    // Initialize BFS from the starting vertex
-    visited[u] = true;
-    queue.push(&vertices[u]);
-
-    while (!queue.empty())
-    {
-        Vertex *vertex = queue.front(); // Dequeue the front vertex
-        queue.pop();
-
-        // Explore all adjacent vertices
-        for (auto i = vertex->adj.begin(); i != vertex->adj.end(); ++i)
-        {
-            if (!visited[(*i)->key])
-            {
-                visited[(*i)->key] = true;       // Mark vertex as visited
-                parent[(*i)->key] = vertex->key; // Record its parent
-                queue.push(*i);                  // Enqueue for further exploration
-            }
-        }
-    }
-
-    // Check if the destination was reached during the BFS
-    if (!visited[v])
-    {
-        cout << "No path exists from: " << u << " to " << v << endl;
-        return;
-    }
-
-    // Reconstruct the path from end vertex to start vertex using the parent map
-    list<K> path;
-    for (K vertex = v; vertex != u; vertex = parent[vertex])
-    {
-        path.push_front(vertex);
-    }
-    path.push_front(u);
-
-    // Print the path
-    auto it = path.begin();
-    cout << *it;
-    for (++it; it != path.end(); ++it)
-    {
-        cout << " -> " << *it;
-    }
-    cout << flush; // Ensure the output is flushed to stdout
-}
-
-//========================================================
-// BFS Tree
-// Constructs a BFS tree from a starting vertex and prints the tree level by level.
-// Parameters:
-//   s - The key of the starting vertex for the BFS tree.
-// Pre-condition:
-//   s should be a valid key of a vertex within the graph.
-// Post-condition:
-//   Outputs the BFS tree, showing vertices grouped by their depth levels,
-//   and prints each level on a new line.
-// Return: None
-//========================================================
-template <typename D, typename K>
-void Graph<D, K>::bfs_tree(const K &s)
-{
-    unordered_map<K, bool> visited; // Tracks which vertices have been visited
-    queue<Vertex *> queue;          // Manages the BFS queue
-
-    // Start BFS with the root vertex
-    visited[s] = true;
-    queue.push(&vertices[s]);
-
-    // Maps to track depth and vertices at each depth
-    unordered_map<K, int> depth;
-    depth[s] = 0;
-    map<int, vector<K>> levels; // Sorted map to maintain levels ordered
-    levels[0].push_back(s);
-
-    while (!queue.empty())
-    {
-        Vertex *vertex = queue.front();
-        queue.pop();
+        currentVertex = vertexQueue.front();
+        vertexQueue.pop();
 
         // Process each adjacent vertex
-        for (auto i = vertex->adj.begin(); i != vertex->adj.end(); ++i)
+        for (KeyType adjacentKey : currentVertex->adj)
         {
-            if (!visited[(*i)->key])
+            nextVertex = this->get(adjacentKey);
+
+            if (!nextVertex->color)
             {
-                visited[(*i)->key] = true;
-                depth[(*i)->key] = depth[vertex->key] + 1;     // Set depth for each vertex
-                levels[depth[(*i)->key]].push_back((*i)->key); // Add vertex to the appropriate level
-                queue.push(*i);
+                nextVertex->color = true;
+                nextVertex->distance = currentVertex->distance + 1;
+                nextVertex->p = currentVertex;
+                vertexQueue.push(nextVertex);
             }
         }
     }
+}
 
-    // Print the BFS tree by levels
-    for (auto it = levels.begin(); it != levels.end(); ++it)
+
+//========================================================
+// Function: print_path
+// Purpose: Prints the shortest path from a starting vertex to a destination vertex.
+// Parameters:
+//   - startKey
+//   - endKey 
+// Pre-condition:
+//   - Both startKey and endKey must be valid vertex keys in the graph.
+// Post-condition:
+//   - Outputs the path from vertex `u` to vertex `v` if a path exists.
+//   - If no path is found, prints a message indicating non-existence of a path.
+// Return: None
+//========================================================
+
+template <typename DataType, typename KeyType>
+void Graph<DataType, KeyType>::print_path(KeyType startKey, KeyType endKey)
+{
+    if (isReachable(startKey, endKey))
+        print_path(startKey, endKey, "");
+}
+
+template <typename DataType, typename KeyType>
+void Graph<DataType, KeyType>::print_path(KeyType startKey, KeyType endKey, string suffix)
+{
+    Vertex<DataType, KeyType> *destinationVertex = this->get(endKey);
+
+    stringstream output;
+    if (startKey == endKey)
     {
-        for (size_t i = 0; i < it->second.size(); i++)
-        {
-            cout << it->second[i];
-            if (i != it->second.size() - 1)
-            {
-                cout << " ";
+        output << startKey;
+        cout << output.str() << " -> ";
+    }
+    else if (destinationVertex->p == nullptr)
+    {
+        cout << "No path available." << endl;
+    }
+    else
+    {
+        print_path(startKey, destinationVertex->p->key, " -> ");
+        output << endKey;
+        cout << output.str() << suffix;
+    }
+    output.str("");  // Clear the contents of the stringstream
+}
+
+//========================================================
+// Function: reachable
+// Purpose: Determines if a vertex 'v' is reachable from another vertex 'u' using Breadth-First Search (BFS).
+// Parameters:
+//   - startKey 
+//   - targetKey
+// Preconditions:
+//   - Both `startKey` and `targetKey` should be valid keys of vertices within the graph.
+// Postconditions:
+//   - The method does not modify the graph but updates the visitation state of the vertices.
+//   - Returns a boolean indicating whether the target vertex is reachable from the start vertex.
+// Return:
+//   - true: If a path from `startKey` to `targetKey` exists.
+//   - false: If no such path exists or if either vertex key does not correspond to an existing vertex.
+//========================================================
+
+template <typename DataType, typename KeyType>
+bool Graph<DataType, KeyType>::reachable(KeyType startKey, KeyType targetKey)
+{
+    bfs(startKey);  // Perform BFS starting from startKey to mark all reachable vertices
+    Vertex<DataType, KeyType>* targetVertex = this->get(targetKey);
+    Vertex<DataType, KeyType>* startVertex = this->get(startKey);
+
+    if (targetVertex == nullptr || startVertex == nullptr) {
+        return false;  // Return false if either vertex does not exist, indicating one or both keys are invalid
+    }
+
+    return targetVertex->color;  // Return the visited state of the target vertex, true if reachable, false otherwise
+}
+
+//========================================================
+// Function: bfs_tree
+// Purpose: Constructs a BFS tree starting from a given vertex and prints the tree level by level.
+// Parameters:
+//   - startKey
+// Preconditions:
+//   - `startKey` must be a valid key of a vertex within the graph. If not, the method may not function correctly.
+// Postconditions:
+//   - Outputs the BFS tree, showing vertices grouped by their depth levels.
+//   - Each depth level is printed on a new line.
+// Return: None
+//========================================================
+
+template <typename DataType, typename KeyType>
+void Graph<DataType, KeyType>::bfs_tree(KeyType startKey)
+{
+    vector<KeyType> verticesAtCurrentLevel;
+    int currentLevel = 0;
+    int maximumLevel = 0;
+
+    this->bfs(startKey);  // Perform BFS to set distances and determine tree structure
+
+    // Determine the maximum distance level from the start vertex
+    for (Vertex<DataType, KeyType> *vertex : this->vertices) {
+        if (vertex->distance > maximumLevel) {
+            maximumLevel = vertex->distance;
+        }
+    }
+
+    // Loop through each level and gather vertices at that level
+    while (currentLevel <= maximumLevel) {
+        verticesAtCurrentLevel.clear();
+        for (Vertex<DataType, KeyType> *vertex : this->vertices) {
+            if (vertex->distance == currentLevel) {
+                verticesAtCurrentLevel.push_back(vertex->key);
             }
         }
-        if (next(it) != levels.end())
-        {
+
+        // If no vertices at the current level, break the loop
+        if (verticesAtCurrentLevel.empty()) {
+            break;
+        }
+
+        // Print all vertices at the current level
+        cout << verticesAtCurrentLevel.front();
+        for (KeyType key : verticesAtCurrentLevel) {
+            if (key != verticesAtCurrentLevel.front()) {
+                cout << " " << key;
+            }
+        }
+
+        // Print newline unless it's the last level
+        if (currentLevel != maximumLevel) {
             cout << endl;
         }
+
+        currentLevel++;
     }
 }
 
 //========================================================
-// Edge Class
-// Constructs a BFS tree from a starting vertex and prints the tree level by level.
+// Function: dfs_visit
+// Purpose: Recursively visits vertices in a depth-first search (DFS) manner from a given vertex.
 // Parameters:
-//   u - The key of the starting vertex for the BFS tree.
-// Pre-condition: Threshold must be a valid integer
-// Post-condition: returns the edge class of the edge (u, v) in the graph
+//   - currentVertex 
+//   - currentTime
+// Preconditions:
+//   - `currentVertex` should not be null and should be part of the graph.
+//   - `currentTime` should be initialized prior to the first call to this method.
+// Postconditions:
+//   - `currentVertex` and potentially other vertices in the graph have their visited status set to true.
+//   - Discovery and finishing times are set for vertices as they are visited.
+// Return: None
 //========================================================
-template <typename D, typename K>
-string edge_class(int u, int v, const vector<vector<int>> &adjList)
+
+template <typename DataType, typename KeyType>
+void Graph<DataType, KeyType>::dfs_visit(Vertex<DataType, KeyType>* currentVertex, int* currentTime)
 {
-    map<int, int> level;
-    queue<int> q;
-    q.push(u);
-    level[u] = 0;
+    (*currentTime)++; // Increment the global time counter
+    currentVertex->discoveryTime = *currentTime; // Set the discovery time for the vertex
+    currentVertex->visited = true; // Mark the vertex as visited
 
-    while (!q.empty())
+    Vertex<DataType, KeyType>* adjacentVertex = nullptr;
+
+    // Explore each adjacent vertex
+    for (KeyType adjacentKey : currentVertex->adj)
     {
-        int current = q.front();
-        q.pop();
-
-        for (int adj : adjList[current])
+        adjacentVertex = get(adjacentKey); // Retrieve the adjacent vertex
+        if (!adjacentVertex->visited)
         {
-            if (level.count(adj) == 0)
-            {
-                q.push(adj);
-                level[adj] = level[current] + 1;
-            }
+            adjacentVertex->predecessor = currentVertex; // Set predecessor for depth-first tree
+            dfs_visit(adjacentVertex, currentTime); // Recursively visit the unvisited adjacent vertex
         }
     }
 
-    if (level.count(v) == 0)
-    {
-        return "no edge";
-    }
-    else if (level[v] == level[u] + 1)
-    {
-        return "tree edge";
-    }
-    else if (level[v] < level[u])
-    {
-        return "back edge";
-    }
-    else if (level[v] > level[u] + 1)
-    {
-        return "forward edge";
-    }
-    else if (level[v] == level[u])
-    {
-        return "cross edge";
-    }
+    (*currentTime)++; // Increment the global time again
+    currentVertex->finishingTime = *currentTime; // Set the finishing time for the vertex
 }
 
-template <typename D, typename K>
-void Graph<D, K>::dfs(const K &s)
+//========================================================
+// Function: dfs
+// Purpose: Initiates a depth-first search (DFS) for the entire graph from a specified start vertex.
+// Parameters:
+//   - startKey
+// Preconditions:
+//   - `startKey` must be a valid key of a vertex within the graph. The vertex serves as the starting point for DFS.
+// Postconditions:
+//   - All vertices in the graph are visited and marked as such.
+//   - Discovery and finishing times are assigned to each vertex.
+//   - The graph's DFS forest (set of DFS trees) is formed, with `predecessor` links showing the paths taken during the search.
+// Return: None
+//========================================================
+
+template <typename DataType, typename KeyType>
+void Graph<DataType, KeyType>::dfs(KeyType startKey)
 {
-    // Initialize all vertices as not visited
-    for (auto &pair : vertices)
-    {
-        pair.second.color = false;
-        pair.second.pi = "no parent"; // Initialize parent of all vertices as "no parent"
+    // Initialize all vertices
+    for (Vertex<DataType, KeyType>* vertex : this->vertices) {
+        vertex->visited = false;
+        vertex->predecessor = nullptr;
+        vertex->discoveryTime = 0;
     }
 
-    int time = 0; // Initialize time
+    int* currentTime = new int(0);  // Using dynamic allocation to manage time during DFS
 
-    // Call the recursive helper function
-    dfsUtil(s, "no parent", time); // Pass "no parent" as parent of source vertex
-}
-
-template <typename D, typename K>
-void Graph<D, K>::dfsUtil(const K &v, const K &parent, int &time)
-{
-    // Mark the current node as visited and set its parent
-    vertices[v].color = true;
-    vertices[v].pi = parent;
-
-    // Update the discovery time
-    vertices[v].distance = ++time;
-
-    // Recur for all vertices adjacent to this vertex
-    for (Vertex *i : vertices[v].adj)
-    {
-        if (!i->color)
-        {
-            dfsUtil(i->key, v, time);
+    // Start DFS from each unvisited vertex, to ensure all components of the graph are explored
+    for (Vertex<DataType, KeyType>* vertex : this->vertices) {
+        if (!vertex->visited) {
+            dfs_visit(vertex, currentTime);  // Call the recursive DFS visit method
         }
     }
 
-    // Update the finish time
-    vertices[v].f = ++time;
+    delete currentTime;  // Clean up the dynamically allocated time to prevent memory leaks
 }
 
-template <class D, class K>
-bool Graph<D, K>::is_descendant(K u, K v)
+
+//========================================================
+// Function: edge_class
+// Purpose: Classifies the type of edge between two vertices in a graph after performing a DFS.
+// Parameters:
+//   - startKey 
+//   - endKey 
+// Preconditions:
+//   - Both startKey and endKey must be valid vertex keys within the graph.
+// Postconditions:
+//   - Returns a string representing the classification of the edge between the given vertices.
+// Return:
+//   - A string representing the type of edge: "tree edge", "back edge", "forward edge", "cross edge", or "no edge".
+//========================================================
+
+template <typename DataType, typename KeyType>
+string Graph<DataType, KeyType>::edge_class(KeyType startKey, KeyType endKey)
 {
-    Vertex *v1 = get(u);
-    Vertex *v2 = get(v);
+    dfs(startKey);  // Perform DFS to determine the structure of the graph and relationships
 
-    // Check if v2 is a descendant of v1
-    while (v2 != nullptr && v2->key != v1->key)
-    {
-        v2 = get(v2->pi);
-    }
+    Vertex<DataType, KeyType>* sourceVertex = get(startKey);
+    Vertex<DataType, KeyType>* targetVertex = get(endKey);
 
-    return v2 != nullptr;
-}
+    Vertex<DataType, KeyType>* ancestor = nullptr;
 
-template <class D, class K>
-string Graph<D, K>::edge_class(K u, K v)
-{
-    Vertex *v1 = get(u);
-    Vertex *v2 = get(v);
-
-    // Determine the correct starting point for the DFS
-    K start = (v1->distance < v2->distance) ? u : v;
-
-    // Perform the DFS
-    dfs(start);
-
-    if (v1->color == false || v2->color == false)
-    {
-        // If one of the vertices is not in the graph.
-        return "no edge";
-    }
-    else if (v2->pi == v1->key && v2->distance > v1->distance)
-    {
-        // Tree edge, v2 is a direct descendant of v1
+    // Tree Edge: Direct parent-child relationship
+    ancestor = targetVertex->predecessor;
+    if (ancestor && ancestor->key == sourceVertex->key) {
         return "tree edge";
     }
-    else if (v2->distance > v1->distance && v2->f < v1->f && is_descendant(u, v) && v2->pi != v1->key)
-    {
-        // Forward edge, v2 is a descendant of v1 but not a direct child
-        return "forward edge";
-    }
-    else if (v2->distance <= v1->distance && v2->f > v1->f)
-    {
-        // Back edge, v2 is an ancestor of v1
-        return "back edge";
-    }
-    else if (v2->distance < v2->f && v1->distance < v1->f)
-    {
-        // Cross edge, neither node is an ancestor or descendant to the other
-        return "cross edge";
+
+    // Back Edge: Source is a descendant of the target
+    ancestor = sourceVertex->predecessor;
+    while (ancestor) {
+        if (ancestor->key == targetVertex->key) {
+            return "back edge";
+        }
+        ancestor = ancestor->predecessor;
     }
 
-    return "no edge";
+    // Forward Edge: Target is a descendant of the source but not a direct child
+    ancestor = targetVertex->predecessor;
+    while (ancestor) {
+        if (ancestor->key == sourceVertex->key) {
+            return "forward edge";
+        }
+        ancestor = ancestor->predecessor;
+    }
+
+    // No Edge: Check if there's a direct connection
+    bool hasDirectConnection = false;
+    for (KeyType adjacentKey : sourceVertex->adj) {
+        if (adjacentKey == targetVertex->key) {
+            hasDirectConnection = true;
+            break;
+        }
+    }
+    if (!hasDirectConnection) {
+        return "no edge";
+    }
+
+    // If none of the above, it's a cross edge
+    return "cross edge";
 }
+

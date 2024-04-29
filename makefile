@@ -1,6 +1,6 @@
 #----------------------------#
 #	Make File for Graph		 #
-# Andrew A, Anekit G, Ryan D #
+#-----Anikett Gauba----------#
 #----------------------------#
 all: test # runs everything at once
 

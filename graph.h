@@ -2,39 +2,30 @@
 #define GRAPH_H
 
 #include <vector>
-#include <map>
 #include <string>
-#include <unordered_map>
+
+#include "vertex.h"
 
 using namespace std;
 
-template<typename D, typename K>
+template <typename D, typename K>
 class Graph {
-public:
-    struct Vertex {
-        D data;
-        K key;
-        vector<Vertex*> adj;
-        int distance;
-        bool color; 
-        K pi; 
-        int f; 
-    };
+    public:
+        Graph(vector<K> keys, vector<D> data, vector<vector<K>> edges);
+        Vertex<D,K>* get(K key);
+        bool reachable(K u, K v);
+        void print_path(K u, K v);
+        string edge_class(K u, K v);
+        void bfs(K s);
+        void bfs_tree(K s);
 
-    Graph(const vector<K>& keys, const vector<D>& data, const vector<vector<K>>& edges);
-    Vertex* get(K key);
-    bool reachable(const K& u, const K& v);
-    void bfs(const K& s);
-    void print_path(const K& u, const K& v);
-    string edge_class(const K u, const K v);
-    bool edge_exists(const K& u, const K& v);
-    void bfs_tree(const K& s);
-    void dfs(const K& s);
-    void dfsUtil(const K& v, const K& parent, int& time);
-    bool is_descendant(K u, K v);
-
-private:    
-    unordered_map<K, Vertex> vertices;
+    private:
+        vector<Vertex<D,K>*> vertices;
+        vector<vector<K>> edges;
+        void print_path(K u, K v, string suff);
+        void dfs(K s);
+        void dfs_visit(Vertex<D,K>* u, int* time);
 };
 
-#endif // GRAPH_H
+#endif
+
